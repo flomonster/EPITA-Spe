@@ -55,20 +55,3 @@ void putpixel(SDL_Surface *surface, unsigned x, unsigned y, Uint32 pixel) {
     break;
   }
 }
-
-void SDL_GetRGB(Uint32 px, SDL_PixelFormat *fmt, Uint8 *r, Uint8 *g, Uint8 *b)
-{
-  *r = fmt[px].Rmask;
-  *g = fmt[px].Gmask;
-  *b = fmt[px].Bmask;
-} 
-
-Uint8 average(Uint8 r, Uint8 g, Uint8 b)
-{
-  return ((short) r + (short) g + (short) b) / 3;
-}
-
-void SDL_MapRGB(SDL_PixelFormat *fmt, Uint8 r, Uint8 g, Uint8 b)
-{
-
-}
