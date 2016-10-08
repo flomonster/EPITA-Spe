@@ -80,9 +80,12 @@ int main(int argc, char *argv[])
 {
   if (argc == 2)
   {
-    SDL_Surface *img = load_image(argv[0]);
+    SDL_Surface *img = load_image(argv[1]);
+    display_image(img);
+    wait_for_keypressed();
     grey(img);
     display_image(img);
+    wait_for_keypressed();
   }
   return 0;
 }
