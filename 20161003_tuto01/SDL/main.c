@@ -1,3 +1,10 @@
+# include <stdlib.h>
+# include <stdio.h>
+# include <SDL.h>
+# include <SDL_image.h>
+# include <err.h>
+# include "pixel_operations.h"
+
 void wait_for_keypressed(void) {
   SDL_Event             event;
   // Infinite loop, waiting for event
@@ -55,4 +62,30 @@ SDL_Surface* display_image(SDL_Surface *img) {
  
   // return the screen for further uses
   return screen;
+}
+
+void grey(SDL_Surface *img)
+{
+  unsigned char r, g, b, moy;
+  for (int i = 0; i < img->w; i++)
+    for (int j = 0; j < img->h; j++)
+    {
+      SDL_GetRGB(getpixel(img, i, j), img->format, &r, &g, &b);
+      moy = r * 0.3 + b * 0.11 + g * 0.59;
+      putpixel(img, i, j, SDL_MapRGB(img->format, moy, moy, moy));
+    }
+}
+
+int main(int argc, char *argv[])
+{
+  if (argc == 2)
+  {
+    SDL_Surface *img = load_image(argv[1]);
+    display_image(img);
+    wait_for_keypressed();
+    grey(img);
+    display_image(img);
+    wait_for_keypressed();
+  }
+  return 0;
 }

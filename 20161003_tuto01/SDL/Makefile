@@ -1,5 +1,3 @@
-## Simple SDL mini code
- 
 CC=clang
  
 CPPFLAGS= `pkg-config --cflags sdl`
