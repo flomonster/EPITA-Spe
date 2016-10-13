@@ -28,8 +28,8 @@ void quick_sort(int *begin, int *end)
   if (end - begin > 1)
   {
     pivot = partition(begin, end);
-    quick_sort(begin, pivot - 1);
-    quick_sort(pivot + 1, end);
+    quick_sort(begin, pivot);
+    quick_sort(pivot, end);
   }
 }
  

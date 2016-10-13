@@ -39,8 +39,7 @@ int main(int argc, char *argv[])
   /* use bench_sort to test and bench sort algorithms on random array */
   //bench_sort(begin, end, array_insert_sort, "insert sort"); 
   //bench_sort(begin, end, array_insert_sort_bin, "insert sort bin"); 
-  //bench_sort(begin, end, quick_sort, "quick sort"); 
-
+  bench_sort(begin, end, quick_sort, "quick sort"); 
   // free memory
   free(array);
   free(copy);

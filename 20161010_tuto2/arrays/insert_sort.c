@@ -27,9 +27,6 @@ int *bin_search(int *begin, int *end, int x)
     else
       left = mid + 1;
   }
-  for (int *i = begin; i <= end; i += 1)
-    printf("%d ", *i);
-  printf(":> %d / %d  / %d\n", x, *left, *right);
   return left;
 }
 

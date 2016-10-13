@@ -35,9 +35,9 @@ void array_print(int *begin, int *end)
 /* array_is_sorted(begin, end): test if array is sorted */
 int array_is_sorted(int *begin, int *end)
 {
-  for (int *i = begin; i < end; i += sizeof(int))
+  for (int *i = begin; i < end; i ++)
   {
-    if (*i > *(i + sizeof(int)))
+    if (*i > *(i + 1))
       return 0;
   }
   return 1;
