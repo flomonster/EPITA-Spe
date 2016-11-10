@@ -36,7 +36,7 @@ size_t list_len(struct list *list)
 {
   size_t length = 0;
   struct list *save = list;
-  while (list->next != NULL)
+  while (list->next)
   {
     length++;
     list = list->next;
@@ -81,7 +81,7 @@ struct list* list_pop_front(struct list *list)
 struct list* list_find(struct list *list, int value)
 {
   struct list *save = list;
-  while (list->next != NULL)
+  while (list->next)
   {
     if (list->next->data == value)
     {
@@ -103,7 +103,7 @@ int list_is_sorted(struct list *list)
 {
   struct list *save = list;
   list = list->next;
-  while (list->next != NULL && list->data <= list->next->data)
+  while (list->next && list->data <= list->next->data)
     list = list->next;
   int b = list->next == NULL;
   list = save;
@@ -118,7 +118,7 @@ int list_is_sorted(struct list *list)
 void list_insert(struct list *list, struct list *elm)
 {
   struct list *save = list;
-  while (list->next != NULL && list->next->data < elm->data)
+  while (list->next && list->next->data < elm->data)
     list = list->next;
   list_push_front(list, elm);
   list = save;  
@@ -136,7 +136,7 @@ void list_rev(struct list *list)
 {
   struct list *sentinel = list;
   struct list *save = NULL;
-  while (list->next != NULL)
+  while (list->next)
   {
     struct list *swap = list->next;
     list->next = save;
@@ -157,7 +157,7 @@ void list_half_split(struct list *list, struct list *second)
 {
   struct list *save = list;
   size_t i = 0;
-  while (list->next != NULL)
+  while (list->next)
   {
     i++;
     if (i)
