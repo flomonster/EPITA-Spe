@@ -13,8 +13,6 @@ struct vector* vector_make(size_t capacity)
   v->capacity = capacity;
   v->size = 0;
   v->data = malloc(sizeof(int) * capacity);
-  for (size_t i = 0; i < capacity; i++)
-    v->data[i] = 0;
   return v;
 }
  
@@ -74,7 +72,7 @@ void vector_push_front(struct vector *vect, int x)
     vect->data = tmp;
     vect->capacity *= 1.61;
   }
-  for (size_t i = 1; i < vect->size; i++)
+  for (size_t i = vect->size; i > 0; i--)
     vect->data[i] = vect->data[i-1];
   vect->data[0] = x;
   vect->size++;
@@ -124,7 +122,7 @@ int vector_insert_at(struct vector *vect, size_t pos, int x)
 
   if (pos > vect->size)
     return 0;
-  for (size_t i = pos + 1; i < vect->size + 1; i++)
+  for (size_t i = vect->size; i > pos; i--)
     vect->data[i] = vect->data[i-1];
   vect->data[pos] = x;
   vect->size++;
@@ -158,7 +156,7 @@ int vector_extract_at(struct vector *vect, size_t pos, int *x)
 struct vector* vector_clone(struct vector *vect)
 {
   struct vector *v = malloc(sizeof(struct vector));
-  v->capacity = vect->capacity;
+  v->capacity = vect->size;
   v->size = vect->size;
   v->data = malloc(sizeof(int) * v->capacity);
   for (size_t i = 0; i < v->capacity; i++)
