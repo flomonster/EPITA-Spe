@@ -134,8 +134,13 @@ void list_insert(struct list *list, struct list *elm)
  */
 void list_rev(struct list *list)
 {
+  if (list_is_empty(list))
+    return;
+
   struct list *sentinel = list;
   struct list *save = NULL;
+  list = list->next;
+
   while (list->next)
   {
     struct list *swap = list->next;
@@ -155,37 +160,20 @@ void list_rev(struct list *list)
  */
 void list_half_split(struct list *list, struct list *second)
 {
+  if (list_is_empty(list))
+    return;
   struct list *save = list;
-  size_t i = 0;
+  second->next = list;
+  size_t i = 1;
   while (list->next)
   {
-    i++;
-    if (i)
-      second->next = list;
     list = list->next;
+    i = 1 - i;
+    if (i)
+      second->next = second->next->next;
   }
   list = second->next;
   second->next = list->next;
   list->next = NULL;
   list = save;
-}
-
-void print_list(struct list *list)
-{
-  int line = 1;
-  printf("[");
-  if (list->next) {
-    goto pastfst;
-    while (list->next) {
-      line += printf(";");
-      if (line > 72) {
-	printf("\n ");
-	line = 1;
-      }
-      pastfst:
-      line += printf(" %d", list->next->data);
-      list = list->next;
-    }
-  }
-  printf(" ]\n");
 }
