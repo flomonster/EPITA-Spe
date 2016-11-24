@@ -60,18 +60,31 @@ struct htable *create_htable (size_t capacity )
 */
 struct pair *access_htable (struct htable *htable , char *key)
 {
-  uint32_t pos = hash(key) % htable->capacity;
+  uint32_t h = hash(key);
+  size_t pos = h % htable->capacity;
   if (!htable->tab[pos])
     return NULL;
-
-  
+  struct pair *p = htable->tab[pos];
+  while (p)
+  {
+    if (p->hkey == h && !strcmp(p->key, key))
+      return p;
+    p = p->next;
+  }
+  return NULL;
 }
  
 /*
 * add_htable(htable,key,value):
 * add the pair (key,value) to the hash table
 */
-int add_htable (struct htable *htable , char *key, void *value);
+int add_htable (struct htable *htable , char *key, void *value)
+{
+  uint32_t h = hash(key);
+  size_t pos = h % htable->capacity;
+  if (!
+
+}
  
 /*
 * remove_htable(htable, key):
