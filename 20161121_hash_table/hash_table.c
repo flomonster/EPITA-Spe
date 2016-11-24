@@ -1,23 +1,10 @@
-/* hash_table.h */
+/* hash_table.c */
 /* Hash Table implementation: header */
- 
-# ifndef _HASH_TABLE_H_
-# define _HASH_TABLE_H_
  
 # include <stdint.h>
 # include <stdlib.h>
- 
-struct pair {
-  uint32_t hkey ;
-  char *key;
-  void *value;
-  struct pair *next;
-};
- 
-struct htable {
-  size_t size , capacity ;
-  struct pair **tab;
-};
+# include <string.h>
+# include "hash_table.h"
  
 /*
 * hash(data):
@@ -32,6 +19,7 @@ uint32_t hash(char *data)
     h += *(data + i);
     h += h * 1024;
     h = h ^ (h / 64);
+    i++;
   }
   h += h * 8;
   h = h ^ (h / 2048);
@@ -73,6 +61,35 @@ struct pair *access_htable (struct htable *htable , char *key)
   }
   return NULL;
 }
+
+/*
+* auto_resize(htable)
+* check and resize if the htable is too full
+*/
+void auto_resize(struct htable *htable)
+{
+  if ((float) htable->size / (float) htable->capacity > .75)
+  {
+    struct htable old = *htable;
+    struct htable *new = create_htable(old.capacity * 2);
+    *htable = *new;
+    free(new);
+    for (size_t i = 0; i < old.capacity; i++)
+      if (old.tab[i])
+      {
+        struct pair *p = old.tab[i];
+        struct pair *swap;
+        while (p)
+        {
+          swap = p;
+          p = p->next;
+          add_htable(htable, swap->key, swap->value);
+          free(swap);
+        }
+      }
+    free(old.tab);
+  }
+}
  
 /*
 * add_htable(htable,key,value):
@@ -91,6 +108,8 @@ int add_htable (struct htable *htable , char *key, void *value)
         return 0;
       p = p->next;
     }
+    if (p->hkey == h && !strcmp(p->key, key))
+      return 0;
   }
   htable->size++;
   struct pair *p = malloc(sizeof (struct pair));
@@ -99,34 +118,11 @@ int add_htable (struct htable *htable , char *key, void *value)
   p->value = value;
   p->next = htable->tab[pos];
   htable->tab[pos] = p;
+  auto_resize(htable);
   return 1;
 }
 
-/*
-* auto_resize(htable)
-* check and resize if the htable is too full
-*/
-void auto_resize(struct htable *htable)
-{
-  if ((float) htable->capacity / (float) h->size > .75)
-  {
-    struct htable *nhtable = create_htable(htable->capacity * 2);
-    for (size_t i = 0; i < htable->capacity; i++)
-      if (htable->tab[i])
-      {
-        struct pair *p = htable->tab[i];
-        while (p)
-        {
-          struct pair *swap = p;
-          p = p->next;
-          add_htable(nhtable, swap->key, swap->value);
-          free(swap);
-        }
-      }
-    htable = nhtable;
-  }
-}
- 
+
 /*
 * remove_htable(htable, key):
 * removes the pair containing the given key from the hash table
@@ -179,5 +175,3 @@ void clear_htable (struct htable *htable)
       }
     }
 }
- 
-# endif /* _HASH_TABLE_H_ */
