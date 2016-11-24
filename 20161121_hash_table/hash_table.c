@@ -82,20 +82,102 @@ int add_htable (struct htable *htable , char *key, void *value)
 {
   uint32_t h = hash(key);
   size_t pos = h % htable->capacity;
-  if (!
+  if (htable->tab[pos])
+  {
+    struct pair *p = htable->tab[pos];
+    while (p->next)
+    {
+      if (p->hkey == h && !strcmp(p->key, key))
+        return 0;
+      p = p->next;
+    }
+  }
+  htable->size++;
+  struct pair *p = malloc(sizeof (struct pair));
+  p->hkey = h;
+  p->key = key;
+  p->value = value;
+  p->next = htable->tab[pos];
+  htable->tab[pos] = p;
+  return 1;
+}
 
+/*
+* auto_resize(htable)
+* check and resize if the htable is too full
+*/
+void auto_resize(struct htable *htable)
+{
+  if ((float) htable->capacity / (float) h->size > .75)
+  {
+    struct htable *nhtable = create_htable(htable->capacity * 2);
+    for (size_t i = 0; i < htable->capacity; i++)
+      if (htable->tab[i])
+      {
+        struct pair *p = htable->tab[i];
+        while (p)
+        {
+          struct pair *swap = p;
+          p = p->next;
+          add_htable(nhtable, swap->key, swap->value);
+          free(swap);
+        }
+      }
+    htable = nhtable;
+  }
 }
  
 /*
 * remove_htable(htable, key):
 * removes the pair containing the given key from the hash table
 */
-void remove_htable (struct htable *htable , char *key);
+void remove_htable (struct htable *htable , char *key)
+{
+  uint32_t h = hash(key);
+  size_t pos = h % htable->capacity;
+  if (!htable->tab[pos])
+    return;
+  struct pair *p = htable->tab[pos];
+  if (p->hkey == h && !strcmp(p->key, key))
+  {
+    htable->tab[pos] = p->next;
+    free(p);
+    htable->size--;
+    return;
+  }
+  while (p->next)
+  {
+    if (p->next->hkey == h && !strcmp(p->next->key, key))
+    {
+      struct pair *swap = p->next;
+      p->next = swap->next;
+      free(swap);
+      htable->size--;
+      return;
+    }
+    p = p->next;
+  }
+}
  
 /*
 * clear_htable(htable):
 * delete all pairs in the table
 */
-void clear_htable (struct htable *htable );
+void clear_htable (struct htable *htable)
+{
+  htable->size = 0;
+  for (size_t i = 0; i < htable->capacity; i++)
+    if (htable->tab[i])
+    {
+      struct pair *p = htable->tab[i];
+      htable->tab[i] = NULL;
+      while (p)
+      {
+        struct pair *swap = p;
+        p = p->next;
+        free(swap);
+      }
+    }
+}
  
 # endif /* _HASH_TABLE_H_ */
