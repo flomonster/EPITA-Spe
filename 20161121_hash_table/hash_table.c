@@ -70,24 +70,24 @@ void auto_resize(struct htable *htable)
 {
   if ((float) htable->size / (float) htable->capacity > .75)
   {
-    struct htable old = *htable;
-    struct htable *new = create_htable(old.capacity * 2);
-    *htable = *new;
-    free(new);
-    for (size_t i = 0; i < old.capacity; i++)
-      if (old.tab[i])
+    struct htable *new = create_htable(htable->capacity * 2);
+    for (size_t i = 0; i < htable->capacity; i++)
+      if (htable->tab[i])
       {
-        struct pair *p = old.tab[i];
+        struct pair *p = htable->tab[i];
         struct pair *swap;
         while (p)
         {
           swap = p;
           p = p->next;
-          add_htable(htable, swap->key, swap->value);
+          add_htable(new, swap->key, swap->value);
           free(swap);
         }
       }
-    free(old.tab);
+    htable->capacity *= 2;
+    free(htable->tab);
+    htable->tab = new->tab;
+    free(new);
   }
 }
  
