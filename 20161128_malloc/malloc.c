@@ -17,20 +17,20 @@ typedef struct chunk chunk;
 static inline
 size_t word_align(size_t n)
 {
-  return (n + 7) & (SIZE_MAX - 7);
+  return (n + 7) & ~7;
 }
 
 /* zerofill(ptr, len): write len 0 bytes at the address ptr */
 void zerofill(void *ptr, size_t len)
 {
-  for (size_t i = 0; i < len; i++)
+  for (size_t i = 0; i < len / sizeof (size_t); i++)
     ((size_t *) ptr)[i] = 0;
 }
 
 /* wordcpy(dst, src, len) copy len bytes from src to dst */
 void wordcpy(void *dst, void *src, size_t len)
 {
-  for (size_t i = 0; i < len; i++)
+  for (size_t i = 0; i < len / sizeof (size_t); i++)
     ((size_t *) dst)[i] = ((size_t *) src)[i];
 }
 
@@ -38,12 +38,13 @@ static
 struct chunk* get_base(void) 
 {
   static struct chunk *base = NULL;
-  if (base == NULL) 
+  if (!base) 
   {
-    base->data = sbrk(2);
+    base = sbrk(sizeof (chunk));
     base->next = NULL;
     base->prev = NULL;
-    base->data = 0;
+    base->data = NULL;
+    base->size = 0;
     base->free = 0;
   }
   return base;
@@ -64,7 +65,7 @@ int extend_heap(struct chunk *last, size_t size)
   new->prev = last;
   new->next = NULL;
   new->size = size;
-  new->data = new + sizeof (chunk);
+  new->data = new + 1;
   new->free = 0;
   return 1;
 }
@@ -75,7 +76,7 @@ struct chunk* find_chunk(size_t size)
   chunk *base = get_base();
   while (base->next)
   {
-    if (base->next->size >= size)
+    if (base->next->free && base->next->size >= size)
       return base;
     base = base->next;
   }
@@ -86,14 +87,13 @@ static
 struct chunk* get_chunk(void *p)
 {
   if (!p || (chunk *) p < get_base() || p > sbrk(0) ||
-      !((size_t) p & 7))
+      ((size_t) p & 7))
     return NULL;
-  chunk *base = get_base();
-  while (base->next && base->data < p)
-    base = base->next;
-  if (base->data == p)
-    return base;
-  return NULL;
+  chunk *c = p;
+  c--;
+  if (c->data != p)
+    return NULL;
+  return c;
 }
 
 void* malloc(size_t size)
@@ -106,20 +106,32 @@ void* malloc(size_t size)
       return NULL;
   c = c->next;
   c->free = 0;
-  return c + sizeof (chunk);
+  return c->data;
 }
 
 void* calloc(size_t nb, size_t size)
 {
-  void *c = malloc(nb * size);
+  size_t mul;
+  if (__builtin_mul_overflow(nb, size, &mul))
+    return NULL;
+  void *c = malloc(mul);
   if (!c)
     return NULL;
-  zerofill(c, nb * size);
+  zerofill(c, mul);
   return c;
 }
 
 void* realloc(void *old, size_t newsize)
 {
+  if (!newsize)
+  {
+    free(old);
+    return NULL;
+  }
+
+  if (!old)
+    return malloc(newsize);
+
   chunk *c = get_chunk(old);
   if (!c)
     return NULL;
