@@ -71,13 +71,42 @@ int extend_heap(struct chunk *last, size_t size)
 }
 
 static
+void split(chunk *c, size_t size)
+{
+  chunk *new = c->data + size;
+
+  new->next = c->next;
+  new->prev = c;
+  new->data = new + 1;
+  new->size = c->size - size - sizeof (chunk);
+  
+  c->next = new;
+  c->size = size;
+
+  free(new->data);
+}
+
+static
+void merge(chunk *c)
+{
+  c->size += c->next->size + sizeof (chunk);
+  c->next = c->next->next;
+  if (c->next)
+    c->next->prev = c;
+}
+
+static
 struct chunk* find_chunk(size_t size)
 {
   chunk *base = get_base();
   while (base->next)
   {
     if (base->next->free && base->next->size >= size)
+    {
+      if (base->next->size - size > sizeof (chunk) + size / 4)
+        split(base->next, size);
       return base;
+    }
     base = base->next;
   }
   return base;
@@ -149,5 +178,11 @@ void free(void *p)
 {
   chunk *c = get_chunk(p);
   if (c)
+  {
     c->free = 1;
+    if (c->next && c->next->free)
+      merge(c);
+    if (c->prev->free)
+      merge(c->prev);
+  }
 }
